@@ -12,12 +12,25 @@ namespace Homies.Controllers
     {
         private readonly HomiesDbContext _context;
 
+        public EventController(HomiesDbContext context)
+        {
+                this._context = context;
+        }
+
         [HttpGet]
         public async Task<IActionResult> All()
         {
-            var model = _context.Events.Select(e => new EventFormViewModel()).FirstOrDefault();
-
-            model.Types = await GetTypes();
+            var model = await _context.Events
+                .AsNoTracking()
+                .Select(e => new EventInfoViewModel 
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Start = e.Start.ToString(EventDateTimeFormat),
+                Organiser = e.Organiser.UserName,
+                Type = e.Type.Name
+            })
+                .ToListAsync();
 
             return View(model);
         }
@@ -25,7 +38,8 @@ namespace Homies.Controllers
         [HttpGet]
         public async Task<IActionResult> Add() 
         {
-            var model = _context.Events.Select(e => new EventFormViewModel()).FirstOrDefault();
+            var model = await _context.Events
+                .Select(e => new EventFormViewModel()).FirstOrDefaultAsync();
 
             model.Types = await GetTypes();
 
@@ -89,10 +103,12 @@ namespace Homies.Controllers
 
         public async Task<IList<TypeViewModel>> GetTypes() 
         {
-            return await _context.Types.Select(t => new TypeViewModel
+            return await _context.Types
+                .AsNoTracking()
+                .Select(t => new TypeViewModel
             {
-             Id = t.Id,
-             Name = t.Name,
+                Id = t.Id,
+                Name = t.Name,
             }).ToListAsync();
         }
     }
