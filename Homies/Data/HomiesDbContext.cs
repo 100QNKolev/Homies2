@@ -10,9 +10,9 @@ namespace Homies.Data
         {
         }
 
-        DbSet<Event> Events { get; set; }
-        DbSet<Type> Types { get; set; }
-        DbSet<EventParticipant> EventsParticipants { get; set; }
+        public DbSet<Event> Events { get; set; }
+        public DbSet<Type> Types { get; set; }
+        public DbSet<EventParticipant> EventsParticipants { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,7 +23,8 @@ namespace Homies.Data
             modelBuilder
                 .Entity<EventParticipant>()
                 .HasOne(ep => ep.Event)
-                .WithMany(e => e.EventsParticipants);
+                .WithMany(e => e.EventsParticipants)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder
                 .Entity<Type>()

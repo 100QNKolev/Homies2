@@ -14,5 +14,8 @@
         public const int EventDescriptionMaxLength = 150;
 
         public const string EventDateTimeFormat = "yyyy-MM-dd H:mm";
+
+        public const string DateTimeError = $"Invalid date! Format must be: {EventDateTimeFormat}";
+
     }
 }

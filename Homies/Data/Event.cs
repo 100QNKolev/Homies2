@@ -34,7 +34,7 @@ namespace Homies.Data
         public DateTime End { get; set; }
 
         [Required]
-        public string TypeId { get; set; } = string.Empty;
+        public int TypeId { get; set; }
 
         [ForeignKey(nameof(TypeId))]
         public Type Type { get; set; } = null!;
