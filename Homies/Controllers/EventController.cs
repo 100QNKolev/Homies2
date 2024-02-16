@@ -153,11 +153,6 @@ namespace Homies.Controllers
         {
             string userId = GetUserId();
 
-            if (id == null) 
-            {
-                return BadRequest();
-            }
-
             var e = await _context.Events
                 .Where(ep => ep.Id == id)
                 .Include(e => e.EventsParticipants)
@@ -176,6 +171,93 @@ namespace Homies.Controllers
             }
 
             e.EventsParticipants.Remove(ep);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(All));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id) 
+        {
+            var e = await _context.Events
+                .Where(e => e.Id == id)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (e == null) 
+            {
+                return BadRequest();
+            }
+            if (e.OrganiserId != GetUserId()) 
+            {
+                return Unauthorized();
+            }
+
+            var model = new EventFormViewModel
+            {
+                Name = e.Name,
+                Description = e.Description,
+                Start = e.Start.ToString(EventDateTimeFormat),
+                End = e.End.ToString(EventDateTimeFormat),
+                TypeId = e.TypeId
+            };
+
+            model.Types = await GetTypes();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(EventFormViewModel model, int id) 
+        {
+            var e = await _context.Events
+                .FindAsync(id);
+
+            DateTime start = DateTime.Now;
+            DateTime end = DateTime.Now;
+
+            if (e == null) 
+            {
+                return BadRequest();
+            }
+
+            if (!DateTime.TryParseExact(
+                model.Start,
+                EventDateTimeFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out start))
+            {
+                ModelState.AddModelError(nameof(model.Start), DateTimeError);
+            }
+
+            if (!DateTime.TryParseExact(
+                model.End,
+                EventDateTimeFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out end))
+            {
+                ModelState.AddModelError(nameof(model.End), DateTimeError);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.Types = await GetTypes();
+
+                return View(model);
+            }
+            if (e.OrganiserId != GetUserId())
+            {
+                return Unauthorized();
+            }
+
+            e.Name = model.Name;
+            e.Description = model.Description;
+            e.Start = start;
+            e.End = end;
+            e.TypeId = model.TypeId;
 
             await _context.SaveChangesAsync();
 
