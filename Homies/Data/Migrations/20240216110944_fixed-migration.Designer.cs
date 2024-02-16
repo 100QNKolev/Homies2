@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Homies.Data.Migrations
 {
     [DbContext(typeof(HomiesDbContext))]
-    [Migration("20240215083828_fixed-some-bugs")]
-    partial class fixedsomebugs
+    [Migration("20240216110944_fixed-migration")]
+    partial class fixedmigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

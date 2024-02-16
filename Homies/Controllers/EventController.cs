@@ -36,10 +36,9 @@ namespace Homies.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Add() 
+        public async Task<IActionResult> Add()
         {
-            var model = await _context.Events
-                .Select(e => new EventFormViewModel()).FirstOrDefaultAsync();
+            var model = new EventFormViewModel();
 
             model.Types = await GetTypes();
 
@@ -91,6 +90,93 @@ namespace Homies.Controllers
             };
 
             await _context.Events.AddAsync(entity);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(All));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Join(int id) 
+        {
+            string userId = GetUserId();
+
+            var e = await _context.Events
+                .Where(e => e.Id == id)
+                .Include(e => e.EventsParticipants)
+                .FirstOrDefaultAsync();
+                
+            if (e == null) 
+            {
+                return BadRequest();
+            }
+            else if (e.OrganiserId == userId) 
+            {
+                return BadRequest();
+            }
+
+            if (!e.EventsParticipants.Any(e => e.HelperId == userId)) 
+            {
+                e.EventsParticipants.Add(new EventParticipant
+                {
+                    HelperId = userId,
+                    EventId = id
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Joined));
+        }
+
+        public async Task<IActionResult> Joined()
+        {
+            string userId = GetUserId();
+
+            var model = await _context.EventsParticipants
+                .Where(ep => ep.HelperId == userId)
+                .AsNoTracking()
+                .Select(ep => new EventInfoViewModel
+                {
+                    Id = ep.Event.Id,
+                    Name = ep.Event.Name,
+                    Start = ep.Event.Start.ToString(EventDateTimeFormat),
+                    Type = ep.Event.Type.Name,
+                    Organiser = ep.Event.OrganiserId
+                })
+                .ToListAsync();
+
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> Leave(int id) 
+        {
+            string userId = GetUserId();
+
+            if (id == null) 
+            {
+                return BadRequest();
+            }
+
+            var e = await _context.Events
+                .Where(ep => ep.Id == id)
+                .Include(e => e.EventsParticipants)
+                .FirstOrDefaultAsync();
+
+            if (e == null) 
+            {
+                return BadRequest();
+            }
+
+            var ep = e.EventsParticipants.FirstOrDefault(ep => ep.HelperId == userId);
+
+            if (ep == null) 
+            {
+                return BadRequest();
+            }
+
+            e.EventsParticipants.Remove(ep);
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(All));

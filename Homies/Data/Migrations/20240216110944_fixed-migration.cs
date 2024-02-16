@@ -4,7 +4,7 @@
 
 namespace Homies.Data.Migrations
 {
-    public partial class fixedsomebugs : Migration
+    public partial class fixedmigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

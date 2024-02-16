@@ -39,6 +39,6 @@ namespace Homies.Data
         [ForeignKey(nameof(TypeId))]
         public Type Type { get; set; } = null!;
 
-        public IEnumerable<EventParticipant> EventsParticipants { get; set; } = new List<EventParticipant>();
+        public IList<EventParticipant> EventsParticipants { get; set; } = new List<EventParticipant>();
     }
 }

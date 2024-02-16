@@ -23,7 +23,6 @@ namespace Homies.Models
         [Required]
         public int TypeId { get; set; }
 
-        public IEnumerable<TypeViewModel> Types { get; set; } = new List<TypeViewModel>();
-
+        public IList<TypeViewModel> Types { get; set; } = new List<TypeViewModel>();
     }
 }
